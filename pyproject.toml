@@ -10,6 +10,9 @@ discord = "^1.0.1"
 python-dotenv = "^0.15.0"
 howlongtobeatpy = "^0.1.17"
 flask = "^1.1.2"
+python-youtube = "^0.7.0"
+google-api-python-client = "^1.12.8"
+google-auth-oauthlib = "^0.4.2"
 
 [tool.poetry.dev-dependencies]
 
