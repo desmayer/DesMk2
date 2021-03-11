@@ -9,15 +9,22 @@ import discord
 import asyncio
 import opencritic
 import howlongtobeat
+import gifbot
 import friday
+import thanksbot
 from howlongtobeatpy import HowLongToBeat
 from keep_alive import keep_alive
-
+import psn_request
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='a!')
 discord.Client.setUserName = "Astro"
+
+@bot.event
+async def on_ready():
+  # Setting `Playing ` status
+  await bot.change_presence(activity=discord.Game(name="a!help")) 
 
 @bot.event
 async def on_message(message):
@@ -35,6 +42,17 @@ async def on_message(message):
               await message.delete()
           else:
               await bot.process_commands(message)
+@bot.command(name='psn', help='Returns your profile from PSNProfiles')
+async def psn_search(ctx, profile):
+    await psn_request.FetchPSNProfile(ctx, profile)
+
+@bot.command(name='nt', help='Returns your next trophy PSNProfiles. \nRequired: PSN Profile \nOptional: Trophy Type [all, b, s, g, p]; Platform [all, psvr, vita, ps3, ps4, ps5] \nNOTE: If you wish to search all trophy types on a platform you must but all then the platform, not just the plat')
+async def trophy_search(ctx, profile, trophy_type = "all", platform = "all"):
+    await psn_request.FetchNextTrophy(ctx, bot, profile, trophy_type, platform)
+
+@bot.command(name='tl', help='Returns a trophy list for game request. {Required: game name}')
+async def tl_search(ctx,*, game):
+    await psn_request.TrophyList(ctx,bot, game)
 
 @bot.command(name='friday', help="Random Friday Feature!")
 async def friday_feature(ctx):
@@ -43,13 +61,36 @@ async def friday_feature(ctx):
     user = "<@"+str(ctx.author.id)+">"
     await channel.send(content=user +", here is your random Friday Feature!", embed=embedVar)
 
+@bot.command(name="thanks", help="Thank a user")
+async def thank_user(ctx, *, user: discord.Member = None):
+  #813426964886847538 bot-commands
+    channel = bot.get_channel(813426964886847538)
+    if user:
+        if user == ctx.author:
+          await ctx.send("Nice try " + "<@"+str(user.id)+">" + "!")
+        else:
+          await thanksbot.ThankUser(ctx, user, channel)
+    else:
+        await ctx.send('You have to say who do you want to say thank you to')
+
+@bot.command(name="thankscount", help="Get a users thank count")
+async def thank_count(ctx, *, user: discord.Member = None):
+    if user:
+        await thanksbot.ThankCount(ctx, user)
+    else:
+        await thanksbot.ThankCount(ctx, ctx.author)
+
+@bot.command(name='gow', help="Fun GOW Reaction Gifs")
+async def sonyGow(ctx):
+    await gifbot.GetGoWGif(ctx)
+
+@bot.command(name='last', help="Fun Last of Us Reaction Gifs")
+async def sonyLastOfUs(ctx):
+    await gifbot.GetLou2Gif(ctx)
+
 @bot.command(name='99', help='DEMO - Responds with a random quote from Brooklyn 99')
 async def nine_nine(ctx):
-    with open('resources/99.txt') as f:
-        brooklyn_99_quotes = f.read().splitlines()
-
-    response = random.choice(brooklyn_99_quotes)
-    await ctx.send(response)
+    await gifbot.GetB99Gif(ctx)
 
 @bot.command(name='dance', help="See Astro Dance!")
 async def dance(ctx):
@@ -68,6 +109,12 @@ async def pet(ctx):
 
 @bot.command(name='joinclubs', help="Select a reaction to join a club!")
 async def joinclubs(ctx):
+
+    if ctx.channel.id != 813426964886847538:
+        print("ERROR")
+        await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
+        return
+    
     embedVar = discord.Embed(title="Join a Club!", description="Select a reaction to join a club!", color=0x00ff00)
     embedVar.add_field(name="🐢", value="Turtle Bois")
     embedVar.add_field(name="📚", value="The Librarians")
@@ -91,21 +138,21 @@ async def joinclubs(ctx):
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=804696097926807563)
                 print(role.id)
-                await ctx.author.add_roles(role)
+                await user.add_roles(role)
             #he Librarians
             if str(reaction) == "📚":
                 print("Adding role")
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=804918527441109034)
                 print(role.id)
-                await ctx.author.add_roles(role)
+                await user.add_roles(role)
             #Game Club
             if str(reaction) == "🕹️":
                 print("Adding role")
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=813465460439908402)
                 print(role.id)
-                await ctx.author.add_roles(role)
+                await user.add_roles(role)
         except asyncio.TimeoutError:
             embedVar = discord.Embed(title="Club joining cancelled",colour=discord.Colour.purple(),description="Message timed out")
             await message.edit(embed=embedVar)
@@ -116,6 +163,12 @@ async def joinclubs(ctx):
 
 @bot.command(name='leaveclubs', help="Select a reaction to leave a club!")
 async def leaveclubs(ctx):
+
+    if ctx.channel.id != 813426964886847538:
+        print("ERROR")
+        await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
+        return
+
     embedVar = discord.Embed(title="Leave a Club!", description="Select a reaction to leave a club!", color=discord.Colour.red())
     embedVar.add_field(name="🐢", value="Turtle Bois")
     embedVar.add_field(name="📚", value="The Librarians")
@@ -139,21 +192,21 @@ async def leaveclubs(ctx):
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=804696097926807563)
                 print(role.id)
-                await ctx.author.remove_roles(role)
+                await user.remove_roles(role)
             #he Librarians
             if str(reaction) == "📚":
                 print("Adding role")
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=804918527441109034)
                 print(role.id)
-                await ctx.author.remove_roles(role)
+                await user.remove_roles(role)
             #Game Club
             if str(reaction) == "🕹️":
                 print("Adding role")
                 print(user.name)
                 role = discord.utils.get(message.guild.roles, id=813465460439908402)
                 print(role.id)
-                await ctx.author.remove_roles(role)
+                await user.remove_roles(role)
         except asyncio.TimeoutError:
             embedVar = discord.Embed(title="Club joining cancelled",colour=discord.Colour.purple(),description="Message timed out")
             await message.edit(embed=embedVar)
@@ -169,10 +222,7 @@ async def amazing(ctx):
 @bot.command(name="hltb", help='Shows how long a game will take for you to beat!')
 async def hltb(ctx ,*,game):
     print(ctx.channel)
-    if ctx.channel.id != 813426964886847538:
-        print("ERROR")
-        await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
-        return
+    channel = bot.get_channel(813426964886847538)
     #fetch the game
     print(game)
     data = await HowLongToBeat().async_search(game)
@@ -190,7 +240,7 @@ async def hltb(ctx ,*,game):
 
     
     embedVar = howlongtobeat.getGameDetails(data[currentEntry-1], currentEntry, gameCount)    
-    message = await ctx.send(embed=embedVar)
+    message = await channel.send(content="<@"+str(ctx.author.id)+">", embed=embedVar)
     await message.add_reaction("◀️")
     await message.add_reaction("▶️")
 
@@ -229,10 +279,7 @@ async def hltb(ctx ,*,game):
 @bot.command(name='critic', help='Shows critic score for a searched game')
 async def critic(ctx,*, game):
     print(ctx.channel)
-    if ctx.channel.id != 813426964886847538:
-        print("ERROR")
-        await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
-        return
+    channel = bot.get_channel(813426964886847538)
     print(game)
     #fetch the game id
     print(game.replace(" ","%20"))
@@ -254,7 +301,7 @@ async def critic(ctx,*, game):
 
     print(data[currentEntry - 1]["id"])
     embedVar = opencritic.getGameDetails(data[currentEntry - 1]["id"], currentEntry, gameCount)
-    message = await ctx.send(embed=embedVar)
+    message = await channel.send(content="<@"+str(ctx.author.id)+">", embed=embedVar)
     await message.add_reaction("◀️")
     await message.add_reaction("▶️")
 
