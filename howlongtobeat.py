@@ -1,11 +1,5 @@
-import os
-import random
-import json
-from discord.ext import commands
-from dotenv import load_dotenv
-from urllib.request import Request, urlopen
+
 import discord
-import asyncio
 
 def getGameDetails(game, currentEntry, gameCount):
     embedVar = discord.Embed(title=game.game_name, color=0x00ff00)
@@ -20,7 +14,6 @@ def getGameDetails(game, currentEntry, gameCount):
             unitFormat = ""
         else:
             unitFormat = str(units)
-        print(units)
     except:
         print("Error with main units")
     embedVar.add_field(name="Gameplay Main", value=str(game.gameplay_main) + " " + unitFormat, inline=False)

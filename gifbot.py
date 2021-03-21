@@ -24,3 +24,11 @@ async def GetB99Gif(ctx):
 
     response = random.choice(gif)
     await ctx.send(response)
+
+#sends a random ayt image/gif
+async def GetAYT(ctx):
+    with open('resources/ayt.txt') as f:
+        gif = f.read().splitlines()
+
+    response = random.choice(gif)
+    await ctx.send(response)

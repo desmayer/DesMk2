@@ -20,51 +20,52 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 
 bot = commands.Bot(command_prefix='a!')
 discord.Client.setUserName = "Astro"
+bot_channel = 813426964886847538;
+
+async def check_room(ctx):
+  #Wrong channel
+  if(ctx.channel != bot.get_channel(bot_channel)):
+    #Allow testing of course...
+    if (ctx.channel.id == 742123707354579065):
+      return True;
+    await ctx.send("Bot commands are only allowed in <#"+str(813426964886847538)+">");
+    return False;
+  #All is fine
+  return True;
 
 @bot.event
 async def on_ready():
   # Setting `Playing ` status
   await bot.change_presence(activity=discord.Game(name="a!help")) 
 
-@bot.event
-async def on_message(message):
-  #bot command channel
-    if message.content != "a!hltb" or message.content != "a!critic" or message.content != "a!joinclubs" or message.content != "a!leaveclubs":
-      await bot.process_commands(message)
-    else:
-      if message.channel.id == 813426964886847538:
-        #this is astro
-          if message.author.id == 813312198151503924:
-              return
-          
-          validMessage = message.content.startswith("!")
-          if validMessage == False:
-              await message.delete()
-          else:
-              await bot.process_commands(message)
 @bot.command(name='psn', help='Returns your profile from PSNProfiles')
 async def psn_search(ctx, profile):
+  if(await check_room(ctx)):
     await psn_request.FetchPSNProfile(ctx, profile)
 
 @bot.command(name='nt', help='Returns your next trophy PSNProfiles. \nRequired: PSN Profile \nOptional: Trophy Type [all, b, s, g, p]; Platform [all, psvr, vita, ps3, ps4, ps5] \nNOTE: If you wish to search all trophy types on a platform you must but all then the platform, not just the plat')
 async def trophy_search(ctx, profile, trophy_type = "all", platform = "all"):
+  if(await check_room(ctx)):
     await psn_request.FetchNextTrophy(ctx, bot, profile, trophy_type, platform)
 
 @bot.command(name='tl', help='Returns a trophy list for game request. {Required: game name}')
 async def tl_search(ctx,*, game):
+  if(await check_room(ctx)):
     await psn_request.TrophyList(ctx,bot, game)
 
 @bot.command(name='friday', help="Random Friday Feature!")
 async def friday_feature(ctx):
+  if(await check_room(ctx)):
     embedVar = friday.GetFridayFeature(ctx)
-    channel = bot.get_channel(677170394683146260)
+    channel = bot.get_channel(bot_channel)
     user = "<@"+str(ctx.author.id)+">"
     await channel.send(content=user +", here is your random Friday Feature!", embed=embedVar)
 
 @bot.command(name="thanks", help="Thank a user")
 async def thank_user(ctx, *, user: discord.Member = None):
+  if(await check_room(ctx)):
   #813426964886847538 bot-commands
-    channel = bot.get_channel(813426964886847538)
+    channel = bot.get_channel(bot_channel)
     if user:
         if user == ctx.author:
           await ctx.send("Nice try " + "<@"+str(user.id)+">" + "!")
@@ -75,25 +76,35 @@ async def thank_user(ctx, *, user: discord.Member = None):
 
 @bot.command(name="thankscount", help="Get a users thank count")
 async def thank_count(ctx, *, user: discord.Member = None):
+  if(await check_room(ctx)):
     if user:
         await thanksbot.ThankCount(ctx, user)
     else:
         await thanksbot.ThankCount(ctx, ctx.author)
 
+#GIF STUFF
 @bot.command(name='gow', help="Fun GOW Reaction Gifs")
 async def sonyGow(ctx):
+  if(await check_room(ctx)):
     await gifbot.GetGoWGif(ctx)
 
 @bot.command(name='last', help="Fun Last of Us Reaction Gifs")
 async def sonyLastOfUs(ctx):
+  if(await check_room(ctx)):
     await gifbot.GetLou2Gif(ctx)
 
-@bot.command(name='99', help='DEMO - Responds with a random quote from Brooklyn 99')
+@bot.command(name='99', help='Responds with a random quote/gif from Brooklyn 99')
 async def nine_nine(ctx):
+  if(await check_room(ctx)):
     await gifbot.GetB99Gif(ctx)
+
+#@bot.command(name='ayt', help='Responds with a random quote/gif for ayt')
+#async def get_ayt(ctx):
+#    await gifbot.GetAYT(ctx)
 
 @bot.command(name='dance', help="See Astro Dance!")
 async def dance(ctx):
+  if(await check_room(ctx)):
     dance_gifs = [
         'https://media1.giphy.com/media/QzdJer4CUPGheUFa1n/giphy.gif',
         'https://media2.giphy.com/media/D34Wn98AYstonHXdU0/giphy.gif',
@@ -107,9 +118,10 @@ async def pet(ctx):
   response = 'https://cdn.discordapp.com/attachments/724233887659720805/812110115947282472/saoirse-pat.gif'
   await ctx.send(response)
 
+#JOIN CLUBS
 @bot.command(name='joinclubs', help="Select a reaction to join a club!")
 async def joinclubs(ctx):
-
+  if(await check_room(ctx)):
     if ctx.channel.id != 813426964886847538:
         print("ERROR")
         await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
@@ -163,7 +175,7 @@ async def joinclubs(ctx):
 
 @bot.command(name='leaveclubs', help="Select a reaction to leave a club!")
 async def leaveclubs(ctx):
-
+  if(await check_room(ctx)):
     if ctx.channel.id != 813426964886847538:
         print("ERROR")
         await ctx.send("Sorry " + ctx.author.name + ", that is not allowed here!")
@@ -214,17 +226,21 @@ async def leaveclubs(ctx):
             await message.remove_reaction("📚", message.author)
             await message.remove_reaction("🕹️", message.author)
             break
-    
+
+#AMAZING
 @bot.command(name='amazing', help='Shows how amazing something is')
 async def amazing(ctx):
+  if(await check_room(ctx)):
     response = 'https://cdn.discordapp.com/attachments/742349549292617839/795230531528818698/Schermata_2021-01-03_alle_11.00.48.png'
     await ctx.send(response)
+
+#HLTB  
 @bot.command(name="hltb", help='Shows how long a game will take for you to beat!')
 async def hltb(ctx ,*,game):
-    print(ctx.channel)
-    channel = bot.get_channel(813426964886847538)
+  if(await check_room(ctx)):
+    channel = bot.get_channel(bot_channel)
+    
     #fetch the game
-    print(game)
     data = await HowLongToBeat().async_search(game)
 
     #total number of games found
@@ -275,11 +291,13 @@ async def hltb(ctx ,*,game):
                 await message.remove_reaction(reaction, user)
         except asyncio.TimeoutError:
             break
-    
+
+#OPEN CRITIC    
 @bot.command(name='critic', help='Shows critic score for a searched game')
 async def critic(ctx,*, game):
+  if(await check_room(ctx)):
     print(ctx.channel)
-    channel = bot.get_channel(813426964886847538)
+    channel = bot.get_channel(bot_channel)
     print(game)
     #fetch the game id
     print(game.replace(" ","%20"))
