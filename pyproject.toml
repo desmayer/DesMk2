@@ -15,6 +15,7 @@ google-api-python-client = "^1.12.8"
 google-auth-oauthlib = "^0.4.2"
 replit = "^2.0.0"
 bs4 = "^0.0.1"
+validators = "^0.18.2"
 
 [tool.poetry.dev-dependencies]
 
